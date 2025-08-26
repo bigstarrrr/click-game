@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>點擊方塊遊戲</title>
+  <style>
+    body {
+      text-align: center;
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+    }
+    #gameArea {
+      margin: 20px auto;
+      width: 400px;
+      height: 400px;
+      background: white;
+      border: 2px solid black;
+      position: relative;
+      overflow: hidden;
+    }
+    .box {
+      width: 50px;
+      height: 50px;
+      background: red;
+      position: absolute;
+      cursor: pointer;
+    }
+    #result {
+      font-size: 24px;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+    #restartBtn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      cursor: pointer;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>點擊方塊遊戲 🎮</h1>
+  <p>分數：<span id="score">0</span></p>
+  <p>剩餘時間：<span id="time">30</span> 秒</p>
+  <p>最高紀錄：<span id="highScore">0</span></p>
+  <div id="gameArea"></div>
+  <p id="result"></p>
+  <button id="restartBtn">重新開始</button>
+
+  <script>
+    const gameArea = document.getElementById("gameArea");
+    const scoreDisplay = document.getElementById("score");
+    const timeDisplay = document.getElementById("time");
+    const resultDisplay = document.getElementById("result");
+    const restartBtn = document.getElementById("restartBtn");
+    const highScoreDisplay = document.getElementById("highScore");
+
+    let score, timeLeft, gameOver, timer;
+
+    // 讀取最高紀錄
+    let highScore = localStorage.getItem("highScore") || 0;
+    highScoreDisplay.textContent = highScore;
+
+    function startGame() {
+      score = 0;
+      timeLeft = 30;
+      gameOver = false;
+      scoreDisplay.textContent = score;
+      timeDisplay.textContent = timeLeft;
+      resultDisplay.textContent = "";
+      restartBtn.style.display = "none";
+      gameArea.innerHTML = "";
+
+      spawnBox(); // 一開始就出一個
+      timer = setInterval(countdown, 1000);
+    }
+
+    function spawnBox() {
+      if (gameOver) return;
+
+      const box = document.createElement("div");
+      box.classList.add("box");
+
+      const x = Math.random() * (gameArea.clientWidth - 50);
+      const y = Math.random() * (gameArea.clientHeight - 50);
+      box.style.left = `${x}px`;
+      box.style.top = `${y}px`;
+
+      box.addEventListener("click", () => {
+        score++;
+        scoreDisplay.textContent = score;
+        box.remove();
+        spawnBox(); // 點掉就馬上生成下一個
+      });
+
+      gameArea.appendChild(box);
+    }
+
+    function countdown() {
+      timeLeft--;
+      timeDisplay.textContent = timeLeft;
+
+      if (timeLeft <= 0) {
+        endGame();
+      }
+    }
+
+    function endGame() {
+      clearInterval(timer);
+      gameOver = true;
+      gameArea.innerHTML = "";
+
+      if (score >= 30) {
+        resultDisplay.textContent = "🎉 你贏了！";
+        resultDisplay.style.color = "green";
+      } else {
+        resultDisplay.textContent = "😢 你輸了！";
+        resultDisplay.style.color = "red";
+      }
+
+      // 更新最高紀錄
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem("highScore", highScore);
+        highScoreDisplay.textContent = highScore;
+      }
+
+      restartBtn.style.display = "inline-block";
+    }
+
+    restartBtn.addEventListener("click", startGame);
+
+    // 開始遊戲
+    startGame();
+  </script>
+</body>
+</html>
